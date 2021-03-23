@@ -1,11 +1,9 @@
 package vet_clinic_generator;
 
-import java.sql.Connection;
-import java.sql.Date;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.ArrayList;
 
+import static vet_clinic_generator.PetGenerator.generatePet;
 import static vet_clinic_generator.ScheduleOfficeAndServiceGenerator.*;
 import static vet_clinic_generator.Utils.*;
 
@@ -28,7 +26,8 @@ public class ScheduleOfVisitGenerator {
             offices_id_in_wo = returnValues(statement, "office_id", "intersection_worker_office");
             workers_id_in_wo = returnValues(statement, "worker_id", "intersection_worker_office");
         } catch (SQLException e) {
-            System.out.println("Error while connecting to DB");
+            System.out.println(DB_CONNECTING_ERROR);
+            e.printStackTrace();
         }
         int i = 0;
         for (String id : pets_id) {
@@ -52,20 +51,27 @@ public class ScheduleOfVisitGenerator {
         }
     }
 
-    public static void insertScheduleOfVisit(String id, String client_id, String office_id, String worker_id,
+    private static void insertScheduleOfVisit(String id, String client_id, String office_id, String worker_id,
                                              String service_id, Date date_of_visit, int time_of_visit_1, int time_f_visit_2, String amount_of_money) {
         try (Connection connection = getConnection();
              Statement statement = connection.createStatement()) {
-            statement.execute(String.format("INSERT INTO schedule_of_visit (pet_id, client_id, office_id," +
+            PreparedStatement ps = connection.prepareStatement(String.format("INSERT INTO schedule_of_visit (pet_id, client_id, office_id," +
                             " worker_id, service_id, date_and_time_of_visit, amount_of_money) VALUES (" +
                             "'%s','%s','%s','%s','%s','%s %d:%d0:00','%s')", id, client_id, office_id,
-                    worker_id, service_id, date_of_visit, time_of_visit_1, time_f_visit_2, amount_of_money));
-            insertScheduleOfficeOrService(statement, office_id,
-                    "intersection_schedule_service", "(schedule_of_visit_id, service_id)");
-            insertScheduleOfficeOrService(statement, office_id,
-                    "intersection_schedule_office", "(schedule_of_visit_id, office_id)");
+                    worker_id, service_id, date_of_visit, time_of_visit_1, time_f_visit_2, amount_of_money),
+                    Statement.RETURN_GENERATED_KEYS);
+            ps.execute();
+            ResultSet res = ps.getGeneratedKeys();
+            if (res.next()) {
+                int last_schedule_of_visit_id = res.getInt(1);
+                insertScheduleOfficeOrService(statement, last_schedule_of_visit_id, office_id,
+                        "intersection_schedule_service", "(schedule_of_visit_id, service_id)");
+                insertScheduleOfficeOrService(statement, last_schedule_of_visit_id, office_id,
+                        "intersection_schedule_office", "(schedule_of_visit_id, office_id)");
+            }
         } catch (SQLException e) {
-            System.out.println("Error while connecting to DB");
+            System.out.println(DB_CONNECTING_ERROR);
+            e.printStackTrace();
         }
     }
 }

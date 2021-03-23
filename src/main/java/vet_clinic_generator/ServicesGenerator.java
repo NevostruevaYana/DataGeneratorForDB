@@ -13,11 +13,13 @@ import static vet_clinic_generator.Utils.*;
 
     public class ServicesGenerator {
 
-        public static int i = 1;
+        private final static String SERVICES_PATH = "src/data/services.txt";
+
+        private static int i = 1;
 
         public static void generate() {
             try {
-                Files.readAllLines(Paths.get("src/data/services.txt")).forEach(service -> {
+                Files.readAllLines(Paths.get(SERVICES_PATH)).forEach(service -> {
                     String time = String.format("0%d:%d0:00", getRand(0, 3), getRand(0, 6));
                     insertService(service, time, getRand(20, 71));
                     i++; });
@@ -26,7 +28,7 @@ import static vet_clinic_generator.Utils.*;
             }
         }
 
-        public static void insertService(String service, String time, int amount_of_money) {
+        private static void insertService(String service, String time, int amount_of_money) {
             try (Connection connection = getConnection();
                  Statement statement = connection.createStatement()) {
                 statement.execute(String.format("INSERT INTO service (name_of_service, time_of_service_delivery, amount_of_money) VALUES (" +
@@ -34,7 +36,8 @@ import static vet_clinic_generator.Utils.*;
                 insertOffice(statement, i);
                 insertServiceOffice(statement, i);
             } catch (SQLException e) {
-                System.out.println("Error while connecting to DB");
+                System.out.println(DB_CONNECTING_ERROR);
+                e.printStackTrace();
             }
         }
     }

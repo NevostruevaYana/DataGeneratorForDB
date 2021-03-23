@@ -1,15 +1,7 @@
 import vet_clinic_generator.*;
 
-import java.sql.Date;
-import java.util.Random;
-
 public class App {
     public static void main(String[] args){
-
-        if (args.length < 4) {
-            throw new IllegalArgumentException();
-        }
-
         generateRandomDB(Boolean.parseBoolean(args[0]), Integer.parseInt(args[1]),
                 Integer.parseInt(args[2]), Integer.parseInt(args[3]));
     }

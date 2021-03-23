@@ -17,7 +17,7 @@ public class DrugRequestGenerator {
         insertDrugRequest(getRand(0, 100), dates.get(0), dates.get(1));
     }
 
-    public static void insertDrugRequest(int amount, Date date_of_request, Date date_of_supply) {
+    private static void insertDrugRequest(int amount, Date date_of_request, Date date_of_supply) {
         try (Connection connection = getConnection();
              Statement statement = connection.createStatement()) {
             ArrayList<String> workers_id = returnValues(statement, "id", "worker");
@@ -27,7 +27,8 @@ public class DrugRequestGenerator {
                     workers_id.get(getRand(0, workers_id.size())), drugs_id.get(getRand(0, drugs_id.size())),
                     amount, date_of_request, date_of_supply));
         } catch (SQLException e) {
-            System.out.println("Error while connecting to DB");
+            System.out.println(DB_CONNECTING_ERROR);
+            e.printStackTrace();
         }
     }
 }
